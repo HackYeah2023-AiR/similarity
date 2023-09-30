@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from similarity_check import process_images
 
+
 app = Flask(__name__)
 
 

@@ -1,23 +1,46 @@
 import numpy as np 
 from PIL import Image
 from tensorflow.keras.preprocessing import image
+from io import BytesIO
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 from keras.applications.vgg16 import VGG16
 from sklearn.metrics.pairwise import cosine_similarity
+import psycopg2
+
+
+DATABASE_URL = 'postgresql://username:password@localhost:5432/yourdatabase'
+
+
+def get_images_by_animal_ids(animal_ids):
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cursor = conn.cursor()
+
+        query = "SELECT image FROM animal_images WHERE animal_id == %s"
+        cursor.execute(query, animal_ids)
+        image = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+
+        return image
+    except Exception as e:
+        return []
 
 
 def process_images(searched_animal_id, found_animal_ids):
     vgg16 = VGG16(weights='imagenet', include_top=False, 
                   pooling='max', input_shape=(224, 224, 3))
-
+    searched_image = get_images_by_animal_ids(searched_animal_id)
+    
     for model_layer in vgg16.layers:
         model_layer.trainable = False
     returned_json = {"searched_id": searched_animal_id}
     for id in found_animal_ids:
-        returned_json[id] = get_similarity_score(searched_animal_id, id, vgg16)
+        found_images = get_images_by_animal_ids(id)
+        returned_json[id] = get_similarity_score(searched_image, found_images, vgg16)
     return returned_json
 
 
@@ -29,7 +52,7 @@ def load_image(image_path):
         -----------------------------------------------------
         return resized image
     """
-    input_image = Image.open(image_path)
+    input_image = Image.open(BytesIO(image_path))
     resized_image = input_image.resize((224, 224))
     return resized_image
 
