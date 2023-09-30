@@ -45,7 +45,7 @@ def process_location_endpoint():
 def process_image_framing():
     try:
         data = request.get_json()
-        input_image_id = data.get("WildAnimalId")
+        input_image = data.get("WildAnimalImage")
 
         if input_image_id is None:
             return (
@@ -53,7 +53,7 @@ def process_image_framing():
                 400,
             )
 
-        result = utils.process_images(input_image_id)
+        result = utils.process_images(input_image)
 
         return jsonify(result)
     except Exception as e:
