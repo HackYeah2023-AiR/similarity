@@ -20,12 +20,9 @@ def get_images_by_animal_id(animal_id, disappeared=False):
         cursor = conn.cursor()
         
         if disappeared:
-            query = f"SELECT AnimalImageId FROM AnimalImages WHERE DisappearedAnimalEntityDisappearedAnimalId = {animal_id}"
+            query = f'SELECT "ImageBlob" FROM pubilc."AnimalImages" WHERE "DisappearedAnimalEntityDisappearedAnimalId" = {animal_id}'
         else:
-            query = f"SELECT AnimalImageId FROM AnimalImages WHERE FoundedAnimalEntityFoundedAnimalId = {animal_id}"
-        cursor.execute(query)
-        image_id = [row[0] for row in cursor.fetchall()]
-        query  = f"SELECT ImageBlob FROM AnimalImages WHERE AnimalImageId = {image_id[0]}"
+            query = f'SELECT "ImageBlob" FROM public."AnimalImages" WHERE "FoundedAnimalEntityFoundedAnimalId" = {animal_id}'
         cursor.execute(query)
         image = [row[0] for row in cursor.fetchall()]
         cursor.close()
@@ -48,8 +45,8 @@ def get_possible_location_score(disappeared_animal_id, founded_animal_ids):
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         
-        query1 = f"SELECT Location, Date, SpeciesName FROM DisappearedAnimals WHERE DisappearedAnimalId = {disappeared_animal_id}"
-        query2 = f"SELECT Location, Date, SpeciesName FROM FoundedAnimals WHERE FoundedAnimalId = {founded_animal_ids}"
+        query1 = f'SELECT "Location", "Date", "SpeciesName" FROM public."DisappearedAnimals" WHERE "DisappearedAnimalId" = {disappeared_animal_id}'
+        query2 = f'SELECT "Location", "Date", "SpeciesName" FROM public."FoundedAnimals" WHERE "FoundedAnimalId" = {founded_animal_ids}'
         cursor.execute(query1)
         disappeared = [row for row in cursor.fetchall()]
         disappeared = disappeared[0]
