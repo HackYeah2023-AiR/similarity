@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from similarity_check import process_images, process_location
+import utils
 
 
 app = Flask(__name__)
@@ -34,6 +35,25 @@ def process_location_endpoint():
             return jsonify({"error": f"Invaild input data - {searched_animal_id}, {found_animal_ids}"}), 400
 
         result = process_location(searched_animal_id, found_animal_ids)
+
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/select_image", methods=["POST"])
+def process_image_framing():
+    try:
+        data = request.get_json()
+        input_image_id = data.get("WildAnimalId")
+
+        if input_image_id is None:
+            return (
+                jsonify({"error": f"Invaild input data - {input_image_id}"}),
+                400,
+            )
+
+        result = utils.process_images(input_image_id)
 
         return jsonify(result)
     except Exception as e:
