@@ -6,12 +6,12 @@ app = Flask(__name__)
 
 
 # Endpoint do przetwarzania danych z żądania GET
-@app.route('/similarity_points', methods=['GET'])
+@app.route('/similarity_points', methods=['POST'])
 def process_data():
     try:
         data = request.get_json()
-        searched_animal_id = data.get("searched_animal_id")
-        found_animal_ids = data.get("found_animal_ids")
+        searched_animal_id = data.get("SearchedAnimalId")
+        found_animal_ids = data.get("CurrentlyFoundAnimalIds")
 
         if searched_animal_id is None or not found_animal_ids:
             return jsonify({"error": f"Invaild input data - {searched_animal_id}, {found_animal_ids}"}), 400
