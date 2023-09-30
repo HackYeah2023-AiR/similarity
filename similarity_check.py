@@ -23,16 +23,65 @@ def get_images_by_animal_ids(animal_ids, searching=False):
             query = "SELECT image FROM DisappearedAnimal WHERE animal_id = {animal_id}"
         else:
             query = "SELECT image FROM FoundedAnimal WHERE animal_id = {animal_id}"
-        cursor.execute(query, animal_ids)
+        cursor.execute(query)
         image_id = [row[0] for row in cursor.fetchall()]
-        query = query = "SELECT image FROM AnimalImage WHERE animal_img_id = {image_id}"
+        query  = "SELECT image FROM AnimalImage WHERE animal_img_id = {image_id[0]}"
+        cursor.execute(query)
+        image = [row[0] for row in cursor.fetchall()]
         cursor.close()
         conn.close()
 
-        return image
+        return image[0]
+    except Exception as e:
+        return []
+    
+
+def process_location(searched_animal_id, found_animal_ids):   
+    returned_json = {"searched_id": searched_animal_id}
+    for id in found_animal_ids:
+        returned_json[id] = get_possible_location_score(searched_animal_id, id)
+    return returned_json
+
+
+def get_possible_location_score(searched_animal_id, found_animal_ids):
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cursor = conn.cursor()
+        
+        query1 = "SELECT disappearance location, disappearance date, speciesname FROM DisappearedAnimal WHERE animal_id = {searched_animal_id}"
+        query2 = "SELECT location, date, SpeciesName FROM FoundedAnimal WHERE animal_id = {found_animal_ids}"
+        cursor.execute(query1)
+        disappeared = [row for row in cursor.fetchall()]
+        disappeared = disappeared[0]
+        cursor.execute(query2)
+        founded = [row[0] for row in cursor.fetchall()]
+        founded = founded[0]
+        cursor.close()
+        conn.close()
+        return location_points_logic(disappeared[2], (disappeared[0], founded[0]), (disappeared[1], founded[1]))
     except Exception as e:
         return []
 
+
+def location_points_logic(animal_type, location_tuple, dates_tuple):
+    distance = abs(location_tuple[1] - location_tuple[0])
+    time = abs(dates_tuple[1] - dates_tuple[0])
+    if animal_type == "cat":
+        if distance > 30:
+            return 0.1
+        elif distance > 20:
+            return 0.6
+        elif distance > 10:
+            0.8
+    elif animal_type == "dog":
+        if distance > 30:
+            return 0.3
+        elif distance > 20:
+            return 0.7
+        elif distance > 10:
+            0.9
+    else:
+        return 0
 
 def process_images(searched_animal_id, found_animal_ids):
     vgg16 = VGG16(weights='imagenet', include_top=False, 
