@@ -11,13 +11,13 @@ app = Flask(__name__)
 def process_data():
     try:
         data = request.get_json()
-        searched_animal_id = data.get("SearchedAnimalId")
-        found_animal_ids = data.get("CurrentlyFoundAnimalIds")
+        disappeared_animal_id = data.get("DisappearedAnimalId")
+        founded_animal_ids = data.get("FoundedAnimalIds")
 
-        if searched_animal_id is None or not found_animal_ids:
-            return jsonify({"error": f"Invaild input data - {searched_animal_id}, {found_animal_ids}"}), 400
+        if disappeared_animal_id is None or not founded_animal_ids:
+            return jsonify({"error": f"Invaild input data - {disappeared_animal_id}, {founded_animal_ids}"}), 400
 
-        result = process_images(searched_animal_id, found_animal_ids)
+        result = process_images(disappeared_animal_id, founded_animal_ids)
 
         return jsonify(result)
     except Exception as e:
@@ -28,13 +28,13 @@ def process_data():
 def process_location_endpoint():
     try:
         data = request.get_json()
-        searched_animal_id = data.get("SearchedAnimalId")
-        found_animal_ids = data.get("CurrentlyFoundAnimalIds")
+        disappeared_animal_id = data.get("DisappearedAnimalId")
+        founded_animal_ids = data.get("FoundedAnimalIds")
 
-        if searched_animal_id is None or not found_animal_ids:
-            return jsonify({"error": f"Invaild input data - {searched_animal_id}, {found_animal_ids}"}), 400
+        if disappeared_animal_id is None or not founded_animal_ids:
+            return jsonify({"error": f"Invaild input data - {disappeared_animal_id}, {founded_animal_ids}"}), 400
 
-        result = process_location(searched_animal_id, found_animal_ids)
+        result = process_location(disappeared_animal_id, founded_animal_ids)
 
         return jsonify(result)
     except Exception as e:
@@ -45,7 +45,7 @@ def process_location_endpoint():
 def process_image_framing():
     try:
         data = request.get_json()
-        input_image = data.get("WildAnimalImage")
+        input_image = data.get("ImageBlob")
 
         if input_image is None:
             return (

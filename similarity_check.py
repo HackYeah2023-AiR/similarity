@@ -14,18 +14,18 @@ import psycopg2
 DATABASE_URL = 'postgresql://postgres:admin1@localhost:5433/petfinder'
 
 
-def get_images_by_animal_ids(animal_ids, searching=False):
+def get_images_by_animal_id(animal_id, disappeared=False):
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         
-        if searching:
-            query = "SELECT image FROM DisappearedAnimal WHERE animal_id = {animal_id}"
+        if disappeared:
+            query = f"SELECT AnimalImageId FROM AnimalImages WHERE DisappearedAnimalEntityDisappearedAnimalId = {animal_id}"
         else:
-            query = "SELECT image FROM FoundedAnimal WHERE animal_id = {animal_id}"
+            query = f"SELECT AnimalImageId FROM AnimalImages WHERE FoundedAnimalEntityFoundedAnimalId = {animal_id}"
         cursor.execute(query)
         image_id = [row[0] for row in cursor.fetchall()]
-        query  = "SELECT image FROM AnimalImage WHERE animal_img_id = {image_id[0]}"
+        query  = f"SELECT ImageBlob FROM AnimalImages WHERE AnimalImageId = {image_id[0]}"
         cursor.execute(query)
         image = [row[0] for row in cursor.fetchall()]
         cursor.close()
@@ -36,20 +36,20 @@ def get_images_by_animal_ids(animal_ids, searching=False):
         return []
     
 
-def process_location(searched_animal_id, found_animal_ids):   
-    returned_json = {"searched_id": searched_animal_id}
-    for id in found_animal_ids:
-        returned_json[id] = get_possible_location_score(searched_animal_id, id)
+def process_location(disappeared_animal_id, founded_animal_ids):   
+    returned_json = {"disappeared_animal_id": disappeared_animal_id}
+    for id in founded_animal_ids:
+        returned_json[id] = get_possible_location_score(disappeared_animal_id, id)
     return returned_json
 
 
-def get_possible_location_score(searched_animal_id, found_animal_ids):
+def get_possible_location_score(disappeared_animal_id, founded_animal_ids):
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         
-        query1 = "SELECT disappearance location, disappearance date, speciesname FROM DisappearedAnimal WHERE animal_id = {searched_animal_id}"
-        query2 = "SELECT location, date, SpeciesName FROM FoundedAnimal WHERE animal_id = {found_animal_ids}"
+        query1 = f"SELECT Location, Date, SpeciesName FROM DisappearedAnimals WHERE DisappearedAnimalId = {disappeared_animal_id}"
+        query2 = f"SELECT Location, Date, SpeciesName FROM FoundedAnimals WHERE FoundedAnimalId = {founded_animal_ids}"
         cursor.execute(query1)
         disappeared = [row for row in cursor.fetchall()]
         disappeared = disappeared[0]
@@ -83,17 +83,17 @@ def location_points_logic(animal_type, location_tuple, dates_tuple):
     else:
         return 0
 
-def process_images(searched_animal_id, found_animal_ids):
+def process_images(disappeared_animal_id, founded_animal_ids):
     vgg16 = VGG16(weights='imagenet', include_top=False, 
                   pooling='max', input_shape=(224, 224, 3))
-    searched_image = get_images_by_animal_ids(searched_animal_id, searching=True)
+    disappeared_animal_image = get_images_by_animal_id(disappeared_animal_id, disappeared=True)
     
     for model_layer in vgg16.layers:
         model_layer.trainable = False
-    returned_json = {"searched_id": searched_animal_id}
-    for id in found_animal_ids:
-        found_images = get_images_by_animal_ids(id)
-        returned_json[id] = get_similarity_score(searched_image, found_images, vgg16)
+    returned_json = {"disappeared_animal_id": disappeared_animal_id}
+    for id in founded_animal_ids:
+        founded_animal_images = get_images_by_animal_id(id)
+        returned_json[id] = get_similarity_score(disappeared_animal_image, founded_animal_images, vgg16)
     return returned_json
 
 
