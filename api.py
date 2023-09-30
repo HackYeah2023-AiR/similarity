@@ -24,7 +24,7 @@ def process_data():
 
 
 @app.route('/location_possibility', methods=['POST'])
-def process_location():
+def process_location_endpoint():
     try:
         data = request.get_json()
         searched_animal_id = data.get("SearchedAnimalId")
