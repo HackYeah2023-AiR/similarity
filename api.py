@@ -47,9 +47,9 @@ def process_image_framing():
         data = request.get_json()
         input_image = data.get("WildAnimalImage")
 
-        if input_image_id is None:
+        if input_image is None:
             return (
-                jsonify({"error": f"Invaild input data - {input_image_id}"}),
+                jsonify({"error": f"Invaild input data - {input_image}"}),
                 400,
             )
 
