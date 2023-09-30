@@ -11,7 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import psycopg2
 
 
-DATABASE_URL = 'postgresql://username:password@localhost:5432/yourdatabase'
+DATABASE_URL = 'postgresql://postgres:admin1@localhost:5433/petfinder'
 
 
 def get_images_by_animal_ids(animal_ids, searching=False):
