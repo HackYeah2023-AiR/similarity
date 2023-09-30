@@ -14,14 +14,18 @@ import psycopg2
 DATABASE_URL = 'postgresql://username:password@localhost:5432/yourdatabase'
 
 
-def get_images_by_animal_ids(animal_ids):
+def get_images_by_animal_ids(animal_ids, searching=False):
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
-
-        query = "SELECT image FROM animal_images WHERE animal_id == %s"
+        
+        if searching:
+            query = "SELECT image FROM DisappearedAnimal WHERE animal_id = {animal_id}"
+        else:
+            query = "SELECT image FROM FoundedAnimal WHERE animal_id = {animal_id}"
         cursor.execute(query, animal_ids)
-        image = [row[0] for row in cursor.fetchall()]
+        image_id = [row[0] for row in cursor.fetchall()]
+        query = query = "SELECT image FROM AnimalImage WHERE animal_img_id = {image_id}"
         cursor.close()
         conn.close()
 
@@ -33,7 +37,7 @@ def get_images_by_animal_ids(animal_ids):
 def process_images(searched_animal_id, found_animal_ids):
     vgg16 = VGG16(weights='imagenet', include_top=False, 
                   pooling='max', input_shape=(224, 224, 3))
-    searched_image = get_images_by_animal_ids(searched_animal_id)
+    searched_image = get_images_by_animal_ids(searched_animal_id, searching=True)
     
     for model_layer in vgg16.layers:
         model_layer.trainable = False
