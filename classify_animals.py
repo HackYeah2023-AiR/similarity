@@ -29,9 +29,3 @@ def select_image(input_image_name):
     prediction = get_box(input_image_name)
     return prediciton
 
-
-if __name__ == "__main__":
-    for filename in os.listdir("dupa/dog"):
-        print(filename)
-        select_image(f"dupa/dog/{filename}")
-    # print(os.listdir("dupa/dog"))
